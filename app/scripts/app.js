@@ -17,9 +17,9 @@ angular
     'ngSanitize',
     'ngTouch',
     'firebase',
-    'ui.router'  
+    'ui.router', 
+    'ui.bootstrap'   
   ])
-
   .config(function($stateProvider, $urlRouterProvider) {
   
     $urlRouterProvider.otherwise('/');
@@ -32,7 +32,7 @@ angular
         data: {
           requireLogin: true
         }          
-      })         
+      })           
       .state('about', {
         url: '/about',
         templateUrl: 'views/about.html',
@@ -42,3 +42,4 @@ angular
         }           
       });           
   })
+
