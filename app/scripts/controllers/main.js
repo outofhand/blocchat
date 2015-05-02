@@ -11,12 +11,19 @@
  */
 angular.module('blocchatApp')
 
+.filter("asDate", function () {
+    return function (input) {
+        return new Date(input);
+    }
+})
+
 .controller('MainCtrl', function($scope, $modal, Room) {
   $scope.rooms = Room.all;
   $scope.newRoom = '';
+  $scope.roomSelected = false;
+  $scope.roomName = null;
 
   $scope.open = function() {
-
     var modalInstance = $modal.open({
       templateUrl: 'newRoom.html',
       controller: 'ModalInstanceCtrl',
@@ -27,8 +34,13 @@ angular.module('blocchatApp')
         }
       }
     });
+  };
 
-  }
+  $scope.getMessages = function(id) {
+    $scope.messages = Room.messages(id);
+    $scope.roomSelected = true;
+    $scope.roomName = Room.getName(id);   
+  }  
 
 })  
 
@@ -45,6 +57,20 @@ angular.module('blocchatApp')
         name: newRoom,
         type: 'public'
       })
-    }
+    },
+
+    messages: function(roomId) {
+      var messagelist = [];
+      messagelist = $firebaseArray(firebaseRef.child("messages").orderByChild("roomId").equalTo(roomId));
+      return messagelist;      
+    },
+
+    getName: function(id) {
+      firebaseRef.child("rooms/" + id).once("value", function(snap) { 
+        roomName = snap.val().name;
+      });
+
+      return roomName; 
+    }   
   }
 }]);
