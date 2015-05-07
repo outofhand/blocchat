@@ -1,7 +1,7 @@
 /* global Firebase */
 
 'use strict';
-
+var room;
 /**
  * @ngdoc function
  * @name blocchatApp.controller:MainCtrl
@@ -17,11 +17,40 @@ angular.module('blocchatApp')
     }
 })
 
-.controller('MainCtrl', function($scope, $modal, Room) {
+.run(function($cookies, $modal, $log, Room) {
+  if (!$cookies.blocChatCurrentUser || $cookies.blocChatCurrentUser === '') {
+    var newUser = '';
+    var modalInstance = $modal.open({
+        templateUrl: 'views/login.html',
+        controller: 'LoginModalInstanceCtrl',
+        size: 'sm',
+        backdrop: 'static',
+        resolve: {
+          newUser: function() {
+            return $cookies.blocChatCurrentUser;
+          }
+        }
+    });
+
+    modalInstance.result.then(function (newUser) {
+      $cookies.blocChatCurrentUser = newUser;
+    }, function () {
+      $log.info('Modal dismissed at: ' + new Date());
+    });
+
+  }
+})
+
+.controller('MainCtrl', function($scope, $modal, $cookies, Room) {
   $scope.rooms = Room.all;
   $scope.newRoom = '';
   $scope.roomSelected = false;
   $scope.roomName = null;
+  
+  $scope.$watch(function() { return $cookies.blocChatCurrentUser; }, function() {
+        $scope.username = $cookies.blocChatCurrentUser;
+    });
+  
 
   $scope.open = function() {
     var modalInstance = $modal.open({
@@ -48,10 +77,15 @@ angular.module('blocchatApp')
   var firebaseRef = new Firebase('https://kts-blocchat.firebaseio.com/');  
   var rooms = $firebaseArray(firebaseRef.child('rooms'));
   var roomName = [];
-
+  var username;
   return {
     all: rooms,
-
+    getUsername: function () {
+      return username;
+    },
+    setUsername: function (name) {
+      username = name;
+    },
     create: function(newRoom) {
       rooms.$add({
         name: newRoom,
