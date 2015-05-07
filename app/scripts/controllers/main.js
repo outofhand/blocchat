@@ -41,11 +41,13 @@ angular.module('blocchatApp')
   }
 })
 
-.controller('MainCtrl', function($scope, $modal, $cookies, Room) {
+.controller('MainCtrl', function($scope, $modal, $cookies, Room, Message) {
   $scope.rooms = Room.all;
   $scope.newRoom = '';
   $scope.roomSelected = false;
   $scope.roomName = null;
+  $scope.roomId = null;
+  $scope.newMessage = {content: '', roomId: '', sentAt: null, username: ''}; 
   
   $scope.$watch(function() { return $cookies.blocChatCurrentUser; }, function() {
         $scope.username = $cookies.blocChatCurrentUser;
@@ -68,7 +70,40 @@ angular.module('blocchatApp')
   $scope.getMessages = function(id) {
     $scope.messages = Room.messages(id);
     $scope.roomSelected = true;
-    $scope.roomName = Room.getName(id);   
+    $scope.roomName = Room.getName(id); 
+    $scope.roomId = id;  
+  };
+
+  $scope.openMessage = function () {
+    if ($scope.roomId === '') {
+      return;
+    }
+
+    var tempMessage = {content: $scope.newMessage.content, roomId: $scope.roomId, sentAt: Date(), username: $scope.username}; 
+
+    var modalInstance = $modal.open({
+      templateUrl: 'newMessage.html',
+      controller: function ($scope) {
+          $scope.cancelMessage = function () {
+              $scope.$dismiss();
+          };
+
+          $scope.okMessage = function () {
+            tempMessage.content = $scope.newMessage.content;
+
+            Message.send(tempMessage);
+
+            $scope.newMessage = {content: '', roomId: '', sentAt: null, username: ''};                              
+            $scope.$close();
+          };
+      },
+      size: 'sm',
+      resolve: {
+        newMessage: function() {
+          return $scope.newMessage;
+        }
+      }
+    });
   }  
 
 })  
@@ -86,7 +121,7 @@ angular.module('blocchatApp')
     setUsername: function (name) {
       username = name;
     },
-    create: function(newRoom) {
+    create: function (newRoom) {
       rooms.$add({
         name: newRoom,
         type: 'public'
@@ -107,4 +142,21 @@ angular.module('blocchatApp')
       return roomName; 
     }   
   }
+}])
+
+.factory('Message', ['$firebaseArray', '$cookies', function($firebaseArray, $cookies) {
+  var firebaseRef = new Firebase('https://kts-blocchat.firebaseio.com/');
+  var messages = $firebaseArray(firebaseRef.child('messages'));
+
+  return {
+    send: function (newMessage) {
+      messages.$add({
+        content: newMessage.content,
+        roomId: newMessage.roomId,
+        sentAt: Date(),
+        username: newMessage.username
+      });
+    }
+  }
+
 }]);
