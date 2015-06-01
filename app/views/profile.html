@@ -1,0 +1,12 @@
+<h3 class="modal-title">Profile</h3>
+<div class="alert alert-success" role="alert" ng-show="user.isAdmin">You have Admin authorization</div>
+<div class="modal-body">
+	<div>
+		<label>User name: </label><span>{{user.name}}</span>
+		<br />
+		<label>Permission: </label><span ng-hide="user.isAdmin">User</span><span ng-show="user.isAdmin">Administrator</span>	
+	</div>  
+</div>
+<div class="modal-footer">
+  <button class="btn btn-danger" ng-click="logout()">Logout</button>
+</div>

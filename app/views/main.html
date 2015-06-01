@@ -4,15 +4,21 @@
         <div class="col-xs-3" id="left">
             <p class="medium bold left">Rooms</p>
             <div class="clearfix"></div>
-            <a ng-repeat="room in rooms" ng-click="getMessages(room.$id)" class="btn btn-block btn-default btn-lg">{{room.name}}</a>
-            <a ng-click="open()" class="btn btn-block btn-primary">Add room</a> 
+            <div ng-repeat="room in rooms">
+              <div ng-switch on="room.isPrivate">
+                <div ng-switch-when="true">
+                  <a ng-show="loggedInUser.isAdmin" ng-click="getMessages(room.$id)" class="btn btn-block btn-default btn-lg">{{room.name}}</a>
+                </div>
+                <div ng-switch-default>
+                  <a ng-click="getMessages(room.$id)" class="btn btn-block btn-default btn-lg">{{room.name}}</a>
+                </div>                
+              </div>
+            </div>
+            <button class="btn btn-block btn-primary" data-toggle="modal" data-target="#roomModal">Add room</button>
             <p></p>               
         </div>
         <div class="col-xs-6 center-block">
-            <p class="medium bold left">Messages</p>  
-            <div id="room">
-              <h4>{{roomName}}</h4>
-            </div>
+            <p class="medium bold left">{{roomName}} Messages</p>  
             <div id="nomessages" ng-show="!roomSelected">
               <h4>Select a room from the left column.</h4>
             </div>
@@ -24,39 +30,103 @@
                   <span class="lead">{{message.content}}</span> 
                 </div>
               </div> 
-              <button class="btn btn-block btn-primary btn-lg" ng-click="openMessage()">Add message</button>  
+              <button class="btn btn-block btn-primary btn-lg" data-toggle="modal" data-target="#messageModal">Add message</button> 
             </div>
             <div class="clearfix"></div>    
         </div>
         <div class="col-xs-3">             
-
+          <p class="medium bold left">Users Online</p> 
+          <div ng-repeat="user in users">{{user.name}}</div>
         </div>
     </div>
 </div>
-<div class="clearfix"></div> 
+<div class="clearfix"></div>     
 
-<script type="text/ng-template" id="newRoom.html">
-    <div class="modal-header">
-        <h3 class="modal-title">Create a new chat room</h3>
+  <div class="modal fade" id="roomModal" tabindex="-1" role="dialog" aria-labelledby="roomModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="roomModalLabel">New Room</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="roomName">Room Name</label>
+            <input type="text" id="roomName" ng-model="newRoom.newRoom" class="form-control">
+          </div>
+          <div class="checkbox" ng-show="loggedInUser.isAdmin">
+            <label for="isPrivate">
+              <input type="checkbox" id="isPrivate" ng-model="newRoom.isPrivate"> Private
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" ng-click="addRoom(newRoom)" data-dismiss="modal">Add Room</button>
+        </div>
+      </div>
     </div>
-    <div class="modal-body">
-        <input id="new-room" placeholder="New room name?" ng-model="newRoom" autofocus>
-    </div>
-    <div class="modal-footer">
-        <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
-        <button class="btn btn-primary" ng-click="ok()">Create room</button>
-    </div>
-</script>
+  </div>  
 
-  <script type="text/ng-template" id="newMessage.html">
-      <div class="modal-header">
-          <h3 class="modal-title">Add a new message</h3>
+  <div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="userModalLabel">New User</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="newUser">User Name</label>
+            <input type="text" id="newUser" ng-model="newUser" class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" ng-click="addUser(newUser)">Sign In</button>
+        </div>
       </div>
-      <div class="modal-body">
-        <input id="new-message" placeholder="Message?" ng-model="newMessage.content" autofocus>        
+    </div>
+  </div>
+
+  <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="messageModalLabel">New Message</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="newUser">Message</label>
+            <textbox id="newMessage" ng-model="newMessage.content" class="form-control"></textbox>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" ng-click="addMessage()">Add Message</button>
+        </div>
       </div>
-      <div class="modal-footer">
-          <button class="btn btn-warning" ng-click="cancelMessage()">Cancel</button>
-          <button class="btn btn-primary" ng-click="okMessage()">Add message</button>
+    </div>
+  </div>
+
+  <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="loginModalLabel">Login</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="userEmail">Email address</label>
+            <input type="text" id="userEmail" ng-model="_userEmail" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="userPassword">Password</label>
+            <input type="password" id="userPassword" ng-model="_userPassword" class="form-control">
+          </div>          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" ng-click="login(_userEmail, _userPassword)">Login</button>
+        </div>
       </div>
-  </script>
+    </div>
+  </div>
+ 

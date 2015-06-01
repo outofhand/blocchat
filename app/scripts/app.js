@@ -17,8 +17,7 @@ angular
     'ngSanitize',
     'ngTouch',
     'firebase',
-    'ui.router', 
-    'ui.bootstrap'   
+    'ui.router' 
   ])
   .config(function($stateProvider, $urlRouterProvider) {
   
@@ -32,7 +31,15 @@ angular
         data: {
           requireLogin: true
         }          
-      })           
+      }) 
+      .state('profile', {
+        url: '/profile',
+        templateUrl: 'views/profile.html',
+        controller: 'ProfileCtrl',
+        data: {
+          requireLogin: true
+        }           
+      })                       
       .state('about', {
         url: '/about',
         templateUrl: 'views/about.html',
